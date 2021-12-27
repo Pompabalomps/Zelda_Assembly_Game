@@ -29,21 +29,29 @@ proc check_arrow
 	cmp al, 44h
 	je right
 	jne con
-	
+
 	up:
-		mov [side], 0
+		call clean_screen
+		sub [y], 10
+		call draw_character
 
 		jmp con
 	left:
-		mov [side], 1
+		call clean_screen
+		sub [x], 10
+		call draw_character
 
 		jmp con
 	down:
-		mov [side], 2
+		call clean_screen
+		add [y], 10
+		call draw_character
 
 		jmp con
 	right:
-		mov [side], 3
+		call clean_screen
+		add [x], 10
+		call draw_character
 
 		jmp con
 
@@ -61,6 +69,7 @@ proc clean_screen
 
 	mov bx, 0
 	mov al, 0
+	mov [curr_x], 0
 	draw_line:
 		mov cx, [curr_x]
 		mov dx, bx
