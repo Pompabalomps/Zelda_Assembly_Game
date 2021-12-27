@@ -32,21 +32,24 @@ proc check_arrow
 	
 	up:
 		mov [side], 0
+
+		jmp con
 	left:
 		mov [side], 1
+
+		jmp con
 	down:
 		mov [side], 2
+
+		jmp con
 	right:
 		mov [side], 3
+
+		jmp con
+
 	con:
-		call move
 
 	pop ax
-	ret
-endp
-
-proc move
-	
 	ret
 endp
 
