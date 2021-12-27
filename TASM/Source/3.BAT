@@ -1,0 +1,1 @@
+d:\tasm\bin\td %1

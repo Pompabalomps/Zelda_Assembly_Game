@@ -1,0 +1,1 @@
+D:\tasm\bin\tlink /t %1 

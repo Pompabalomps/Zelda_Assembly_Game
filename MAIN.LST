@@ -1,0 +1,358 @@
+Turbo Assembler	 Version 4.1	    12/16/21 21:16:51	    Page 1
+MAIN.ASM
+
+
+
+      1				     IDEAL
+      2
+      3	0000			     MODEL small
+      4
+      5	0000			     STACK 256
+      6
+      7	0100			     DATASEG
+      8	0000  31 32 33 34 35 36	37+  message db	"12345678901234567890123", 0dh,	0ah, 0
+      9	      38 39 30 31 32 33	34+
+     10	      35 36 37 38 39 30	31+
+     11	      32 33 0D 0A 00
+     12	001A  55 70 0D 0A 00	     sup db "Up", 0dh, 0ah, 0
+     13	001F  64 6F 77 6E 0D 0A	00   sdown db "down", 0dh, 0ah,	0
+     14	0026  72 69 67 68 74 0A	0D+  sright db "right",	0ah, 0dh, 0
+     15	      00
+     16	002E  6C 65 66 74 0D 0A	00   sleft db "left", 0dh, 0ah,	0
+     17	0035  14*(00)		     array db 20 dup(0)
+     18
+     19	0049  0000		     x dw 0
+     20	004B  00A0		     y dw 160
+     21	004D  40		     color db 64
+     22
+     23	004E			     CODESEG
+     24
+     25				     ;;	print char, input at al
+     26	0000			     proc print_char
+     27	0000  52			 push dx
+     28
+     29	0001  B4 02			 mov ah, 02h
+     30	0003  8A D0			 mov dl, al
+     31	0005  CD 21			 int 21h
+     32
+     33	0007  5A			 pop dx
+     34	0008  C3			 ret
+     35	0009			     endp
+     36
+     37				     ;;	get char no echo
+     38				     ;;	returns: al - ascii code
+     39				     ;;		 ah - bios code
+     40	0009			     proc get_char_no_echo
+     41	0009  B4 00			 mov ah, 0
+     42	000B  CD 16			 int 16h
+     43
+     44	000D  C3			 ret
+     45	000E			     endp
+     46
+     47				     ;;	get char, with echo, to	al
+     48	000E			     proc get_char_with_echo
+     49	000E  B4 01			 mov ah, 1
+     50	0010  CD 21			 int 21h
+     51
+     52	0012  C3			 ret
+     53	0013			     endp
+     54
+     55				     ;;	write char, input at al
+     56	0013			     proc write_char
+     57	0013  52			 push dx
+Turbo Assembler	 Version 4.1	    12/16/21 21:16:51	    Page 2
+MAIN.ASM
+
+
+
+     58
+     59	0014  B4 02			 mov ah, 02h
+     60	0016  8A D0			 mov dl, al
+     61	0018  CD 21			 int 21h
+     62
+     63	001A  5A			 pop dx
+     64	001B  C3			 ret
+     65	001C			     endp
+     66
+     67	001C			     proc print_string
+     68	001C  55			 push bp
+     69	001D  8B EC			 mov bp, sp
+     70	001F  53			 push bx
+     71	0020  52			 push dx
+     72	0021  50			 push ax
+     73
+     74	0022  8B 5E 04			 mov  bx, [bp+4]
+     75	0025			     again:
+     76	0025  8A 17			 mov  dl, [bx]
+     77	0027  B4 02			 mov  ah, 02h
+     78	0029  CD 21			 int  21h
+     79	002B  43			 inc  bx
+     80	002C  80 FA 00			 cmp  dl, 0
+     81	002F  75 F4			 jne  Again
+     82
+     83	0031  58			 pop ax
+     84	0032  5A			 pop dx
+     85	0033  5B			 pop bx
+     86	0034  5D			 pop bp
+     87	0035  C3			 ret
+     88	0036			     endp
+     89
+     90	0036			     proc print_string_length
+     91	0036  50			 push ax
+     92	0037  53			 push bx
+     93	0038  51			 push cx
+     94	0039  52			 push dx
+     95
+     96	003A  BB 0000r			 mov bx, offset	message
+     97	003D  33 C9			 xor cx, cx
+     98	003F			     label1:
+     99	003F  8A 17			 mov dl, [bx]
+    100	0041  43			 inc bx
+    101	0042  41			 inc cx
+    102	0043  80 FA 0A			 cmp dl, 0ah
+    103	0046  75 F7			 jne label1
+    104
+    105	0048  83 F9 0A			 cmp cx, 10
+    106	004B  7C 13			 jl lower10
+    107	004D  EB 01 90			 jmp greater10
+    108
+    109	0050			     greater10:
+    110	0050  33 D2			 xor dx,dx
+    111	0052  8B C1			 mov ax, cx
+    112
+    113	0054  BB 000A			 mov bx, 10
+    114	0057  F7 F3			 div bx
+Turbo Assembler	 Version 4.1	    12/16/21 21:16:51	    Page 3
+MAIN.ASM
+
+
+
+    115
+    116					 ;; ax = quotient
+    117					 ;; dx = remainder
+    118
+    119	0059  04 30			 add al, '0'
+    120	005B  E8 FFA2			 call print_char
+    121
+    122	005E  8A CA			 mov cl, dl ; remainder
+    123
+    124	0060			     lower10:
+    125	0060  80 C1 30			 add cl, '0'
+    126	0063  8A C1			 mov al, cl
+    127	0065  E8 FF98			 call print_char
+    128
+    129	0068  5A			 pop dx
+    130	0069  59			 pop cx
+    131	006A  5B			 pop bx
+    132	006B  58			 pop ax
+    133	006C  C3			 ret
+    134	006D			     endp
+    135
+    136	006D			     proc print_arrow_type
+    137				     ;;	04bh = left
+    138				     ;;	04dh = right
+    139				     ;;	050h = down
+    140				     ;;	048h = up
+    141	006D  80 FC 4B			 cmp ah, 04bh
+    142	0070  74 0F			 je left
+    143
+    144	0072  80 FC 4D			 cmp ah, 04dh
+    145	0075  74 17			 je right
+    146
+    147	0077  80 FC 50			 cmp ah, 050h
+    148	007A  74 1F			 je down
+    149
+    150	007C  80 FC 48			 cmp ah, 048h
+    151	007F  74 27			 je up
+    152
+    153	0081			     left:
+    154	0081  50 55 8B EC C7 46	02+	 push offset sleft
+    155	      002Er 5D
+    156	008B  EB 28 90			 jmp con
+    157	008E			     right:
+    158	008E  50 55 8B EC C7 46	02+	 push offset sright
+    159	      0026r 5D
+    160	0098  EB 1B 90			 jmp con
+    161	009B			     down:
+    162	009B  50 55 8B EC C7 46	02+	 push offset sdown
+    163	      001Fr 5D
+    164	00A5  EB 0E 90			 jmp con
+    165	00A8			     up:
+    166	00A8  50 55 8B EC C7 46	02+	 push offset sup
+    167	      001Ar 5D
+    168	00B2  EB 01 90			 jmp con
+    169	00B5			     con:
+    170	00B5  E8 FF64			 call print_string
+    171
+Turbo Assembler	 Version 4.1	    12/16/21 21:16:51	    Page 4
+MAIN.ASM
+
+
+
+    172					 ;; clear argument
+    173	00B8  83 C4 02			 add sp, 2
+    174
+    175	00BB  C3			 ret
+    176	00BC			     endp
+    177
+    178	00BC			     proc write_to_array
+    179	00BC  56			 push si
+    180
+    181	00BD  BE 0035r			 mov si, offset	array
+    182	00C0  88 04			 mov [si], al
+    183
+    184	00C2  5E			 pop si
+    185	00C3  C3			 ret
+    186	00C4			     endp
+    187
+    188	00C4			     proc enter_graphic_mode
+    189	00C4  B8 0013			 mov ax, 13h
+    190	00C7  CD 10			 int 10h
+    191	00C9  C3			 ret
+    192	00CA			     endp
+    193
+    194	00CA			     proc enter_text_mode
+    195	00CA  B4 00			 mov ah	, 0
+    196	00CC  B0 02			 mov al, 2
+    197	00CE  CD 10			 int 10h
+    198	00D0  C3			 ret
+    199	00D1			     endp
+    200
+    201	00D1			     proc print_dot_from_memory
+    202	00D1  53			 push bx
+    203	00D2  51			 push cx
+    204	00D3  52			 push dx
+    205
+    206	00D4  B7 00			 mov bh, 0h
+    207	00D6  8B 0E 0049r		 mov cx, [x]
+    208	00DA  8B 16 004Br		 mov dx, [y]
+    209	00DE  A0 004Dr			 mov al, [color]
+    210	00E1  B4 0C			 mov ah, 0ch
+    211	00E3  CD 10			 int 10h
+    212
+    213	00E5  5A			 pop dx
+    214	00E6  59			 pop cx
+    215	00E7  5B			 pop bx
+    216	00E8  C3			 ret
+    217	00E9			     endp
+    218
+    219	00E9			     proc color_pixel
+    220	00E9  E8 FFD8			 call enter_graphic_mode
+    221
+    222	00EC			     next:
+    223	00EC  E8 FFE2			 call print_dot_from_memory
+    224
+    225	00EF  C3			 ret
+    226	00F0			     endp
+    227
+    228	00F0			     Start:
+Turbo Assembler	 Version 4.1	    12/16/21 21:16:51	    Page 5
+MAIN.ASM
+
+
+
+    229	00F0  B8 0000s			 mov ax, @data
+    230	00F3  8E D8			 mov ds, ax
+    231
+    232					 ;mov al, 41h +	10h
+    233					 ;mov al, 'q'
+    234					 ;call print_char
+    235
+    236					 ;push offset sleft
+    237					 ;lea bx, [offset sleft]
+    238					 ;push bx
+    239					 ;call print_string
+    240					 ;add sp, 4
+    241
+    242					 ; push	offset sright
+    243					 ; call	print_string
+    244					 ; add sp, 4
+    245
+    246					 ; push	offset sright
+    247					 ; call	print_string
+    248					 ; add sp, 4
+    249
+    250					 ;call print_string_length
+    251					 ; call	get_char_no_echo
+    252					 ; call	print_arrow_type
+    253
+    254					 ;call get_char_no_echo
+    255					 ;call write_to_array
+    256
+    257	00F5  E8 FFF1			 call color_pixel
+    258
+    259
+    260	00F8			     Exit:
+    261	00F8  B8 4C00			 mov ax, 4C00h
+    262	00FB  CD 21			 int 21h
+    263				     END start
+Turbo Assembler	 Version 4.1	    12/16/21 21:16:51	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "12/16/21"
+??FILENAME			  Text	 "MAIN	  "
+??TIME				  Text	 "21:16:51"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MAIN
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+AGAIN				  Near	 _TEXT:0025
+ARRAY				  Byte	 DGROUP:0035
+COLOR				  Byte	 DGROUP:004D
+COLOR_PIXEL			  Near	 _TEXT:00E9
+CON				  Near	 _TEXT:00B5
+DOWN				  Near	 _TEXT:009B
+ENTER_GRAPHIC_MODE		  Near	 _TEXT:00C4
+ENTER_TEXT_MODE			  Near	 _TEXT:00CA
+EXIT				  Near	 _TEXT:00F8
+GET_CHAR_NO_ECHO		  Near	 _TEXT:0009
+GET_CHAR_WITH_ECHO		  Near	 _TEXT:000E
+GREATER10			  Near	 _TEXT:0050
+LABEL1				  Near	 _TEXT:003F
+LEFT				  Near	 _TEXT:0081
+LOWER10				  Near	 _TEXT:0060
+MESSAGE				  Byte	 DGROUP:0000
+NEXT				  Near	 _TEXT:00EC
+PRINT_ARROW_TYPE		  Near	 _TEXT:006D
+PRINT_CHAR			  Near	 _TEXT:0000
+PRINT_DOT_FROM_MEMORY		  Near	 _TEXT:00D1
+PRINT_STRING			  Near	 _TEXT:001C
+PRINT_STRING_LENGTH		  Near	 _TEXT:0036
+RIGHT				  Near	 _TEXT:008E
+SDOWN				  Byte	 DGROUP:001F
+SLEFT				  Byte	 DGROUP:002E
+SRIGHT				  Byte	 DGROUP:0026
+START				  Near	 _TEXT:00F0
+SUP				  Byte	 DGROUP:001A
+UP				  Near	 _TEXT:00A8
+WRITE_CHAR			  Near	 _TEXT:0013
+WRITE_TO_ARRAY			  Near	 _TEXT:00BC
+X				  Word	 DGROUP:0049
+Y				  Word	 DGROUP:004B
+Turbo Assembler	 Version 4.1	    12/16/21 21:16:51	    Page 7
+Symbol Table
+
+
+
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  004E Word	  Public  DATA
+_TEXT				  16  00FD Word	  Public  CODE
+
