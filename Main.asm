@@ -148,33 +148,17 @@ start:
 	mov ax, 13h
 	int 10h
 	
+	call draw_character
 
 	mainloop:
-		call draw_character
-
-		mov cx, 0fh
-		mov dx, 4240h
-		mov ah, 86h
-		int 15h
-
-		call clean_screen
-
-		mov cx, 0fh
-		mov dx, 4240h
-		mov ah, 86h
-		int 15h
-
-		jmp mainloop
-
-	; mainloop:
-	; 	mov ah, 01h
-	; 	int 16h
-	; 	jz mainloop
-	; 	jmp inp
+		mov ah, 01h
+		int 16h
+		jz mainloop
+		jmp inp
 	
-	; inp:
-	; 	call check_arrow
-	; 	jmp mainloop
+	inp:
+		call check_arrow
+		jmp mainloop
 
 exit:
 	mov ax, 4c00h
