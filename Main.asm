@@ -49,12 +49,28 @@ proc check_arrow
 	jne con
 	
 	up:
+		call clean_screen
+		sub [y], 10
+		call draw_character
+
 		jmp con
 	left:
+		call clean_screen
+		sub [x], 10
+		call draw_character
+
 		jmp con
 	down:
+		call clean_screen
+		add	[y], 10
+		call draw_character
+
 		jmp con
 	right:
+		call clean_screen
+		add [x], 10
+		call draw_character
+
 		jmp con
 
 	con:
