@@ -11,7 +11,6 @@ wid equ 20
 
 DATASEG
 
-side db ?
 x dw start_x
 y dw start_y
 curr_x dw 0
@@ -50,20 +49,12 @@ proc check_arrow
 	jne con
 	
 	up:
-		mov [side], 0
-		
 		jmp con
 	left:
-		mov [side], 1
-
 		jmp con
 	down:
-		mov [side], 2
-
 		jmp con
 	right:
-		mov [side], 3
-
 		jmp con
 
 	con:
