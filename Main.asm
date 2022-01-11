@@ -38,13 +38,13 @@ endp
 
 proc check_arrow
 	push ax
-	cmp al, 57h
+	cmp al, 77h
 	je up
-	cmp al, 41h
+	cmp al, 61h
 	je left
-	cmp al, 53h
+	cmp al, 73h
 	je down
-	cmp al, 44h
+	cmp al, 64h
 	je right
 	jne con
 	
@@ -162,8 +162,8 @@ proc draw_character
 		cmp [x], start_x + wid
 		jne draw_bottom
 
-	pop[y]
-	pop[x]
+	pop [y]
+	pop [x]
 	pop bx
 	pop dx
 	pop cx
