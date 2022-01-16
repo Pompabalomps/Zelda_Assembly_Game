@@ -80,10 +80,10 @@ proc check_arrow
 endp
 
 proc clean_screen
+	push ax
+	push bx
 	push cx
 	push dx
-	push bx
-	push ax
 
 	mov bx, 0
 	mov al, 0
@@ -106,17 +106,18 @@ proc clean_screen
 
 	con2:
 
-	pop ax
-	pop bx
 	pop dx
 	pop cx
+	pop bx
+	pop ax
 	ret
 endp
 
 proc draw_character
+	push ax
+	push bx
 	push cx
 	push dx
-	push bx
 	push [x]
 	push [y]
 
@@ -164,9 +165,10 @@ proc draw_character
 
 	pop [y]
 	pop [x]
-	pop bx
 	pop dx
 	pop cx
+	pop bx
+	pop ax
 	ret
 endp
 
