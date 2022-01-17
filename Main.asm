@@ -121,11 +121,11 @@ proc draw_character
 	push [x]
 	push [y]
 
+	mov al, 47
+	mov ah, 0ch
 	draw_left:
-		mov al, 47
 		mov cx, [x]
 		mov dx, [y]
-		mov ah, 0ch
 		int 10h
 		inc [y]
 		cmp [y], start_y + height
@@ -133,20 +133,16 @@ proc draw_character
 	
 	mov [x], start_x + wid
 	draw_right:
-		mov al, 47
 		mov cx, [x]
 		mov dx, [y]
-		mov ah, 0ch
 		int 10h
 		dec [y]
 		cmp [y], start_y
 		jne draw_right
 	
 	draw_top:
-		mov al, 47
 		mov cx, [x]
 		mov dx, [y]
-		mov ah, 0ch
 		int 10h
 		dec [x]
 		cmp [x], start_x
@@ -154,10 +150,8 @@ proc draw_character
 
 	mov [y], start_y + height
 	draw_bottom:
-		mov al, 47
 		mov cx, [x]
 		mov dx, [y]
-		mov ah, 0ch
 		int 10h
 		inc [x]
 		cmp [x], start_x + wid
