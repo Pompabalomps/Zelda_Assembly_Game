@@ -113,56 +113,74 @@ proc clean_screen
 	ret
 endp
 
-proc draw_character
+proc draw_y_line
 	push ax
 	push bx
 	push cx
 	push dx
-	push [x]
-	push [y]
 
 	mov al, 47
 	mov ah, 0ch
-	draw_left:
+	mov bx, [y]
+	add bx, height
+	move_down:
 		mov cx, [x]
 		mov dx, [y]
 		int 10h
 		inc [y]
-		cmp [y], start_y + height
-		jne draw_left
-	
-	mov [x], start_x + wid
-	draw_right:
-		mov cx, [x]
-		mov dx, [y]
-		int 10h
-		dec [y]
-		cmp [y], start_y
-		jne draw_right
-	
-	draw_top:
-		mov cx, [x]
-		mov dx, [y]
-		int 10h
-		dec [x]
-		cmp [x], start_x
-		jne draw_top
+		cmp [y], bx
+		jne move_down
 
-	mov [y], start_y + height
-	draw_bottom:
-		mov cx, [x]
-		mov dx, [y]
-		int 10h
-		inc [x]
-		cmp [x], start_x + wid
-		jne draw_bottom
 
-	pop [y]
-	pop [x]
 	pop dx
 	pop cx
 	pop bx
 	pop ax
+	ret
+endp
+
+proc draw_x_line
+	push ax
+	push bx
+	push cx
+	push dx
+
+	mov al, 47
+	mov ah, 0ch
+	mov bx, [x]
+	add bx, wid
+	move_right:
+		mov cx, [x]
+		mov dx, [y]
+		int 10h
+		inc [x]
+		cmp [x], bx
+		jne move_right
+
+
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	ret
+endp
+
+proc draw_character
+	call draw_y_line
+	add [x], wid
+	sub [y], height
+	call draw_y_line
+	sub [x], wid
+	sub [y], height
+	call draw_x_line
+	sub [x], wid
+	add [y], height
+	call draw_x_line
+	mov al, 47
+	mov ah, 0ch
+	mov cx, [x]
+	mov dx, [y]
+	int 10h
 	ret
 endp
 
