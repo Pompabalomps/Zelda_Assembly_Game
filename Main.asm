@@ -19,25 +19,6 @@ curr_x dw 0
 
 CODESEG
 
-proc _test
-	push ax
-	push bx
-	push cx
-	push dx
-
-	mov al, 2
-	mov cx, 200
-	mov dx, 100
-	mov ah, 0ch
-	int 10h
-
-	pop dx
-	pop cx
-	pop bx
-	pop ax
-	ret
-endp
-
 proc check_arrow
 	push ax
 	cmp al, 77h
