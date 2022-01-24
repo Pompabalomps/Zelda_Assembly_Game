@@ -8,49 +8,69 @@ start_x equ 30
 start_y equ 30
 height equ 20
 wid equ 20
+x_speed equ 10
+y_speed equ 10
 
 DATASEG
 
-side db ?
 x dw start_x
 y dw start_y
 curr_x dw 0
 
 CODESEG
 
+proc _test
+	push ax
+	push bx
+	push cx
+	push dx
+
+	mov al, 2
+	mov cx, 200
+	mov dx, 100
+	mov ah, 0ch
+	int 10h
+
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	ret
+endp
+
 proc check_arrow
 	push ax
-	cmp al, 57h
+	cmp al, 77h
 	je up
-	cmp al, 41h
+	cmp al, 61h
 	je left
-	cmp al, 53h
+	cmp al, 73h
 	je down
-	cmp al, 44h
+	cmp al, 64h
 	je right
 	jne con
 
 	up:
 		call clean_screen
-		sub [y], 10
+		sub [y], y_speed
 		call draw_character
 
 		jmp con
 	left:
 		call clean_screen
-		sub [x], 10
+		sub [x], x_speed
 		call draw_character
 
 		jmp con
 	down:
 		call clean_screen
-		add [y], 10
+		add	[y], y_speed
 		call draw_character
 
 		jmp con
 	right:
 		call clean_screen
-		add [x], 10
+		add [x], x_speed
 		call draw_character
 
 		jmp con
@@ -62,10 +82,10 @@ proc check_arrow
 endp
 
 proc clean_screen
+	push ax
+	push bx
 	push cx
 	push dx
-	push bx
-	push ax
 
 	mov bx, 0
 	mov al, 0
@@ -89,67 +109,85 @@ proc clean_screen
 
 	con2:
 
-	pop ax
-	pop bx
 	pop dx
 	pop cx
+	pop bx
+	pop ax
+	ret
+endp
+
+proc draw_y_line
+	push ax
+	push bx
+	push cx
+	push dx
+
+	mov al, 47
+	mov ah, 0ch
+	mov bx, [y]
+	add bx, height
+	move_down:
+		mov cx, [x]
+		mov dx, [y]
+		int 10h
+		inc [y]
+		cmp [y], bx
+		jne move_down
+
+
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	ret
+endp
+
+proc draw_x_line
+	push ax
+	push bx
+	push cx
+	push dx
+
+	mov al, 47
+	mov ah, 0ch
+	mov bx, [x]
+	add bx, wid
+	move_right:
+		mov cx, [x]
+		mov dx, [y]
+		int 10h
+		inc [x]
+		cmp [x], bx
+		jne move_right
+
+
+	pop dx
+	pop cx
+	pop bx
+	pop ax
 	ret
 endp
 
 proc draw_character
-	push cx
-	push dx
-	push bx
 	push [x]
 	push [y]
-
-	draw_left:
-		mov al, 47
-		mov cx, [x]
-		mov dx, [y]
-		mov ah, 0ch
-		int 10h
-		inc [y]
-		cmp [y], start_y + height
-		jne draw_left
-	
-	mov [x], start_x + wid
-	draw_right:
-		mov al, 47
-		mov cx, [x]
-		mov dx, [y]
-		mov ah, 0ch
-		int 10h
-		dec [y]
-		cmp [y], start_y
-		jne draw_right
-	
-	draw_top:
-		mov al, 47
-		mov cx, [x]
-		mov dx, [y]
-		mov ah, 0ch
-		int 10h
-		dec [x]
-		cmp [x], start_x
-		jne draw_top
-
-	mov [y], start_y + height
-	draw_bottom:
-		mov al, 47
-		mov cx, [x]
-		mov dx, [y]
-		mov ah, 0ch
-		int 10h
-		inc [x]
-		cmp [x], start_x + wid
-		jne draw_bottom
-
-	pop[y]
-	pop[x]
-	pop bx
-	pop dx
-	pop cx
+	call draw_y_line
+	add [x], wid
+	sub [y], height
+	call draw_y_line
+	sub [x], wid
+	sub [y], height
+	call draw_x_line
+	sub [x], wid
+	add [y], height
+	call draw_x_line
+	mov al, 47
+	mov ah, 0ch
+	mov cx, [x]
+	mov dx, [y]
+	int 10h
+	pop [y]
+	pop [x]
 	ret
 endp
 
@@ -170,6 +208,8 @@ start:
 	
 	inp:
 		call check_arrow
+		mov ah, 08h
+		int 21h
 		jmp mainloop
 
 exit:
