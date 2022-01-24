@@ -49,7 +49,7 @@ proc check_arrow
 	cmp al, 64h
 	je right
 	jne con
-	
+
 	up:
 		call clean_screen
 		sub [y], y_speed
@@ -89,6 +89,7 @@ proc clean_screen
 
 	mov bx, 0
 	mov al, 0
+	mov [curr_x], 0
 	draw_line:
 		mov cx, [curr_x]
 		mov dx, bx
