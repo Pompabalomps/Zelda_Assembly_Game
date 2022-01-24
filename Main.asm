@@ -10,6 +10,10 @@ height equ 20
 wid equ 20
 x_speed equ 10
 y_speed equ 10
+border_left 0
+border_right equ 320
+border_up equ 0
+border_down equ 200
 
 DATASEG
 
