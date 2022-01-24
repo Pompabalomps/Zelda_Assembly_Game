@@ -8,6 +8,8 @@ start_x equ 30
 start_y equ 30
 height equ 20
 wid equ 20
+x_speed equ 10
+y_speed equ 10
 
 DATASEG
 
@@ -50,25 +52,25 @@ proc check_arrow
 	
 	up:
 		call clean_screen
-		sub [y], 10
+		sub [y], y_speed
 		call draw_character
 
 		jmp con
 	left:
 		call clean_screen
-		sub [x], 10
+		sub [x], x_speed
 		call draw_character
 
 		jmp con
 	down:
 		call clean_screen
-		add	[y], 10
+		add	[y], y_speed
 		call draw_character
 
 		jmp con
 	right:
 		call clean_screen
-		add [x], 10
+		add [x], x_speed
 		call draw_character
 
 		jmp con
@@ -166,6 +168,8 @@ proc draw_x_line
 endp
 
 proc draw_character
+	push [x]
+	push [y]
 	call draw_y_line
 	add [x], wid
 	sub [y], height
@@ -181,6 +185,8 @@ proc draw_character
 	mov cx, [x]
 	mov dx, [y]
 	int 10h
+	pop [y]
+	pop [x]
 	ret
 endp
 
@@ -201,6 +207,8 @@ start:
 	
 	inp:
 		call check_arrow
+		mov ah, 08h
+		int 21h
 		jmp mainloop
 
 exit:
