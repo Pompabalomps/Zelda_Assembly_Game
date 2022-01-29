@@ -10,10 +10,10 @@ height equ 20
 wid equ 20
 x_speed equ 10
 y_speed equ 10
-border_left 0
-border_right equ 320
+border_left equ 0
+border_right equ 320 - wid - 1
 border_up equ 0
-border_down equ 200
+border_down equ 200 - height - 1
 
 DATASEG
 
@@ -25,6 +25,7 @@ CODESEG
 
 proc check_arrow
 	push ax
+	push bx
 	cmp al, 77h
 	je up
 	cmp al, 61h
@@ -36,24 +37,44 @@ proc check_arrow
 	jne con
 
 	up:
+		mov bx, [y]
+		sub bx, y_speed
+		cmp bx, border_up
+		jl con
+
 		call clean_screen
 		sub [y], y_speed
 		call draw_character
 
 		jmp con
 	left:
+		mov bx, [x]
+		sub bx, x_speed
+		cmp bx, border_left
+		jl con
+
 		call clean_screen
 		sub [x], x_speed
 		call draw_character
 
 		jmp con
 	down:
+		mov bx, [y]
+		add bx, y_speed
+		cmp bx, border_down
+		jg con
+
 		call clean_screen
 		add	[y], y_speed
 		call draw_character
 
 		jmp con
 	right:
+		mov bx, [x]
+		add bx, x_speed
+		cmp bx, border_right
+		jg con
+
 		call clean_screen
 		add [x], x_speed
 		call draw_character
@@ -62,6 +83,7 @@ proc check_arrow
 
 	con:
 
+	pop bx
 	pop ax
 	ret
 endp
