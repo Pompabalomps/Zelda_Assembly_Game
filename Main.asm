@@ -10,6 +10,10 @@ height equ 20
 wid equ 20
 x_speed equ 10
 y_speed equ 10
+border_left equ 0
+border_right equ 320 - wid - 1
+border_up equ 0
+border_down equ 200 - height - 1
 
 DATASEG
 
@@ -21,6 +25,7 @@ CODESEG
 
 proc check_arrow
 	push ax
+	push bx
 	cmp al, 77h
 	je up
 	cmp al, 61h
@@ -29,35 +34,83 @@ proc check_arrow
 	je down
 	cmp al, 64h
 	je right
-	jne con
+	jne con_mid
 
 	up:
+		mov bx, [y]
+		sub bx, y_speed
+		cmp bx, border_up
+		jl reset_up
+
 		call clean_screen
 		sub [y], y_speed
 		call draw_character
 
 		jmp con
 	left:
+		mov bx, [x]
+		sub bx, x_speed
+		cmp bx, border_left
+		jl reset_left
+
 		call clean_screen
 		sub [x], x_speed
 		call draw_character
 
 		jmp con
 	down:
+		mov bx, [y]
+		add bx, y_speed
+		cmp bx, border_down
+		jg reset_down
+
 		call clean_screen
 		add	[y], y_speed
 		call draw_character
 
 		jmp con
 	right:
+		mov bx, [x]
+		add bx, x_speed
+		cmp bx, border_right
+		jg reset_right
+
 		call clean_screen
 		add [x], x_speed
 		call draw_character
 
 		jmp con
 
+	con_mid:
+		jmp con
+
+	reset_up:
+		call clean_screen
+		mov [y], border_up
+		call draw_character
+		jmp con
+
+	reset_left:
+		call clean_screen
+		mov [x], border_left
+		call draw_character
+		jmp con
+
+	reset_down:
+		call clean_screen
+		mov [y], border_down
+		call draw_character
+		jmp con
+
+	reset_right:
+		call clean_screen
+		mov [x], border_right
+		call draw_character
+		jmp con
+
 	con:
 
+	pop bx
 	pop ax
 	ret
 endp
