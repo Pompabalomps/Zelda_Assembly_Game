@@ -34,13 +34,13 @@ proc check_arrow
 	je down
 	cmp al, 64h
 	je right
-	jne con
+	jne con_mid
 
 	up:
 		mov bx, [y]
 		sub bx, y_speed
 		cmp bx, border_up
-		jl con
+		jl reset_up
 
 		call clean_screen
 		sub [y], y_speed
@@ -51,7 +51,7 @@ proc check_arrow
 		mov bx, [x]
 		sub bx, x_speed
 		cmp bx, border_left
-		jl con
+		jl reset_left
 
 		call clean_screen
 		sub [x], x_speed
@@ -62,7 +62,7 @@ proc check_arrow
 		mov bx, [y]
 		add bx, y_speed
 		cmp bx, border_down
-		jg con
+		jg reset_down
 
 		call clean_screen
 		add	[y], y_speed
@@ -73,12 +73,39 @@ proc check_arrow
 		mov bx, [x]
 		add bx, x_speed
 		cmp bx, border_right
-		jg con
+		jg reset_right
 
 		call clean_screen
 		add [x], x_speed
 		call draw_character
 
+		jmp con
+
+	con_mid:
+		jmp con
+
+	reset_up:
+		call clean_screen
+		mov [y], border_up
+		call draw_character
+		jmp con
+
+	reset_left:
+		call clean_screen
+		mov [x], border_left
+		call draw_character
+		jmp con
+
+	reset_down:
+		call clean_screen
+		mov [y], border_down
+		call draw_character
+		jmp con
+
+	reset_right:
+		call clean_screen
+		mov [x], border_right
+		call draw_character
 		jmp con
 
 	con:
