@@ -44,7 +44,7 @@ proc check_arrow
 
 		call clean_screen
 		sub [y], y_speed
-		call draw_character
+		call draw_characters
 
 		jmp con
 	left:
@@ -55,7 +55,7 @@ proc check_arrow
 
 		call clean_screen
 		sub [x], x_speed
-		call draw_character
+		call draw_characters
 
 		jmp con
 	down:
@@ -66,7 +66,7 @@ proc check_arrow
 
 		call clean_screen
 		add	[y], y_speed
-		call draw_character
+		call draw_characters
 
 		jmp con
 	right:
@@ -77,7 +77,7 @@ proc check_arrow
 
 		call clean_screen
 		add [x], x_speed
-		call draw_character
+		call draw_characters
 
 		jmp con
 
@@ -87,25 +87,25 @@ proc check_arrow
 	reset_up:
 		call clean_screen
 		mov [y], border_up
-		call draw_character
+		call draw_characters
 		jmp con
 
 	reset_left:
 		call clean_screen
 		mov [x], border_left
-		call draw_character
+		call draw_characters
 		jmp con
 
 	reset_down:
 		call clean_screen
 		mov [y], border_down
-		call draw_character
+		call draw_characters
 		jmp con
 
 	reset_right:
 		call clean_screen
 		mov [x], border_right
-		call draw_character
+		call draw_characters
 		jmp con
 
 	con:
@@ -150,7 +150,7 @@ proc clean_screen
 	ret
 endp
 
-proc draw_y_line
+proc draw_player_y_line
 	push ax
 	push bx
 	push cx
@@ -176,7 +176,7 @@ proc draw_y_line
 	ret
 endp
 
-proc draw_x_line
+proc draw_player_x_line
 	push ax
 	push bx
 	push cx
@@ -202,19 +202,19 @@ proc draw_x_line
 	ret
 endp
 
-proc draw_character
+proc draw_player
 	push [x]
 	push [y]
-	call draw_y_line
+	call draw_player_y_line
 	add [x], wid
 	sub [y], height
-	call draw_y_line
+	call draw_player_y_line
 	sub [x], wid
 	sub [y], height
-	call draw_x_line
+	call draw_player_x_line
 	sub [x], wid
 	add [y], height
-	call draw_x_line
+	call draw_player_x_line
 	mov al, 47
 	mov ah, 0ch
 	mov cx, [x]
@@ -225,6 +225,11 @@ proc draw_character
 	ret
 endp
 
+proc draw_characters
+	call draw_player
+	ret
+endp
+
 start:
 	mov ax, @data
 	mov ds, ax
@@ -232,7 +237,7 @@ start:
 	mov ax, 13h
 	int 10h
 	
-	call draw_character
+	call draw_characters
 
 	mainloop:
 		mov ah, 01h
