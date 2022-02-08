@@ -6,6 +6,14 @@ STACK 512
 
 start_x equ 30
 start_y equ 30
+start_npc_1_x equ 100
+start_npc_1_y equ 30
+start_npc_2_x equ 30
+start_npc_2_y equ 80
+start_npc_3_x equ 200
+start_npc_3_y equ 50
+npc_height equ 20
+npc_wid equ 20
 height equ 20
 wid equ 20
 x_speed equ 10
@@ -19,6 +27,8 @@ DATASEG
 
 x dw start_x
 y dw start_y
+npc_x dw start_npc_1_x
+npc_y dw start_npc_1_y
 curr_x dw 0
 
 CODESEG
@@ -150,29 +160,77 @@ proc clean_screen
 	ret
 endp
 
-proc draw_player_y_line
+proc draw_npc_x_line
 	push ax
 	push bx
 	push cx
 	push dx
 
-	mov al, 47
+	mov al, 40
 	mov ah, 0ch
-	mov bx, [y]
-	add bx, height
-	move_down:
-		mov cx, [x]
-		mov dx, [y]
+	mov bx, [npc_x]
+	add bx, npc_wid
+	move_right_npc:
+		mov cx, [npc_x]
+		mov dx, [npc_y]
 		int 10h
-		inc [y]
-		cmp [y], bx
-		jne move_down
+		inc [npc_x]
+		cmp [npc_x], bx
+		jne move_right_npc
+
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	ret
+endp
+
+proc draw_npc_y_line
+	push ax
+	push bx
+	push cx
+	push dx
+
+	mov al, 40
+	mov ah, 0ch
+	mov bx, [npc_y]
+	add bx, npc_height
+	move_down_npc:
+		mov cx, [npc_x]
+		mov dx, [npc_y]
+		int 10h
+		inc [npc_y]
+		cmp [npc_y], bx
+		jne move_down_npc
 
 
 	pop dx
 	pop cx
 	pop bx
 	pop ax
+	ret
+endp
+
+proc draw_npc
+	push [npc_x]
+	push [npc_y]
+	call draw_npc_y_line
+	add [npc_x], npc_wid
+	sub [npc_y], npc_height
+	call draw_npc_y_line
+	sub [npc_x], npc_wid
+	sub [npc_y], npc_height
+	call draw_npc_x_line
+	sub [npc_x], npc_wid
+	add [npc_y], npc_height
+	call draw_npc_x_line
+	mov al, 40
+	mov ah, 0ch
+	mov cx, [npc_x]
+	mov dx, [npc_y]
+	int 10h
+	pop [npc_y]
+	pop [npc_x]
 	ret
 endp
 
@@ -193,6 +251,32 @@ proc draw_player_x_line
 		inc [x]
 		cmp [x], bx
 		jne move_right
+
+
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	ret
+endp
+
+proc draw_player_y_line
+	push ax
+	push bx
+	push cx
+	push dx
+
+	mov al, 47
+	mov ah, 0ch
+	mov bx, [y]
+	add bx, height
+	move_down:
+		mov cx, [x]
+		mov dx, [y]
+		int 10h
+		inc [y]
+		cmp [y], bx
+		jne move_down
 
 
 	pop dx
@@ -226,6 +310,15 @@ proc draw_player
 endp
 
 proc draw_characters
+	mov [npc_x], start_npc_1_x
+	mov [npc_y], start_npc_1_y
+	call draw_npc
+	mov [npc_x], start_npc_2_x
+	mov [npc_y], start_npc_2_y
+	call draw_npc
+	mov [npc_x], start_npc_3_x
+	mov [npc_y], start_npc_3_y
+	call draw_npc
 	call draw_player
 	ret
 endp
