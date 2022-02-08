@@ -29,8 +29,6 @@ x dw start_x
 y dw start_y
 npc_x dw start_npc_1_x
 npc_y dw start_npc_1_y
-temp_npc_x dw start_npc_2_x
-temp_npc_y dw start_npc_2_y
 curr_x dw 0
 
 CODESEG
