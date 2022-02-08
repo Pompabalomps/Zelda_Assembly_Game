@@ -10,6 +10,8 @@ start_npc_1_x equ 100
 start_npc_1_y equ 30
 start_npc_2_x equ 30
 start_npc_2_y equ 80
+start_npc_3_x equ 200
+start_npc_3_y equ 50
 npc_height equ 20
 npc_wid equ 20
 height equ 20
@@ -27,6 +29,8 @@ x dw start_x
 y dw start_y
 npc_x dw start_npc_1_x
 npc_y dw start_npc_1_y
+temp_npc_x dw start_npc_2_x
+temp_npc_y dw start_npc_2_y
 curr_x dw 0
 
 CODESEG
@@ -232,16 +236,6 @@ proc draw_npc
 	ret
 endp
 
-proc switch_npc
-	mov ax, [npc_x]
-	mov bx, [npc_y]
-	pop [npc_x]
-	pop [npc_y]
-	push ax
-	push bx
-	ret
-endp
-
 proc draw_player_x_line
 	push ax
 	push bx
@@ -318,6 +312,14 @@ proc draw_player
 endp
 
 proc draw_characters
+	mov [npc_x], start_npc_1_x
+	mov [npc_y], start_npc_1_y
+	call draw_npc
+	mov [npc_x], start_npc_2_x
+	mov [npc_y], start_npc_2_y
+	call draw_npc
+	mov [npc_x], start_npc_3_x
+	mov [npc_y], start_npc_3_y
 	call draw_npc
 	call draw_player
 	ret
