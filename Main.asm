@@ -31,7 +31,8 @@ clean_x dw ?
 clean_y dw ?
 clean_width dw ?
 clean_height dw ?
-draw_color db 47
+player_color db 47
+npc_color db 40
 npc_x dw start_npc_1_x
 npc_y dw start_npc_1_y
 curr_x dw 0
@@ -49,7 +50,7 @@ proc check_arrow
 	je jump_down
 	cmp al, 64h
 	je jump_right
-	jne con_mid_1
+	jne check_arrow_con_mid_1
 
 	up:
 		mov bx, [y]
@@ -61,14 +62,14 @@ proc check_arrow
 		sub [y], y_speed
 		call draw_characters
 
-	con_mid_1:
-		jmp con_mid_2
+	check_arrow_con_mid_1:
+		jmp check_arrow_con_mid_2
 
 	reset_up:
 		call clean_player
 		mov [y], border_up
 		call draw_characters
-		jmp con_mid_1
+		jmp check_arrow_con_mid_1
 
 	left:
 		mov bx, [x]
@@ -80,8 +81,8 @@ proc check_arrow
 		sub [x], x_speed
 		call draw_characters
 
-	con_mid_2:
-		jmp con_mid_3
+	check_arrow_con_mid_2:
+		jmp check_arrow_con_mid_3
 
 	jump_down:
 		jmp down
@@ -93,7 +94,7 @@ proc check_arrow
 		call clean_player
 		mov [x], border_left
 		call draw_characters
-		jmp con_mid_2
+		jmp check_arrow_con_mid_2
 
 	down:
 		mov bx, [y]
@@ -105,14 +106,14 @@ proc check_arrow
 		add	[y], y_speed
 		call draw_characters
 
-	con_mid_3:
-		jmp con_mid_4
+	check_arrow_con_mid_3:
+		jmp check_arrow_con_mid_4
 
 	reset_down:
 		call clean_player
 		mov [y], border_down
 		call draw_characters
-		jmp con_mid_3
+		jmp check_arrow_con_mid_3
 	
 	right:
 		mov bx, [x]
@@ -124,16 +125,16 @@ proc check_arrow
 		add [x], x_speed
 		call draw_characters
 
-	con_mid_4:
-		jmp con
+	check_arrow_con_mid_4:
+		jmp check_arrow_con
 
 	reset_right:
 		call clean_player
 		mov [x], border_right
 		call draw_characters
-		jmp con_mid_4
+		jmp check_arrow_con_mid_4
 
-	con:
+	check_arrow_con:
 
 	pop bx
 	pop ax
@@ -143,12 +144,26 @@ endp
 proc clean_player
 	push ax
 
-	mov al, [draw_color]
+	mov al, [player_color]
 	push ax
-	mov [draw_color], 0
+	mov [player_color], 0
 	call draw_player
 	pop ax
-	mov [draw_color], al
+	mov [player_color], al
+
+	pop ax
+	ret
+endp
+
+proc clean_npc
+	push ax
+
+	mov al, [npc_color]
+	push ax
+	mov [npc_color], 0
+	call draw_npc
+	pop ax
+	mov [npc_color], al
 
 	pop ax
 	ret
@@ -160,7 +175,7 @@ proc draw_npc_x_line
 	push cx
 	push dx
 
-	mov al, 40
+	mov al, [npc_color]
 	mov ah, 0ch
 	mov bx, [npc_x]
 	add bx, npc_wid
@@ -185,7 +200,7 @@ proc draw_npc_y_line
 	push cx
 	push dx
 
-	mov al, 40
+	mov al, [npc_color]
 	mov ah, 0ch
 	mov bx, [npc_y]
 	add bx, npc_height
@@ -218,7 +233,7 @@ proc draw_npc
 	sub [npc_x], npc_wid
 	add [npc_y], npc_height
 	call draw_npc_x_line
-	mov al, 40
+	mov al, [npc_color]
 	mov ah, 0ch
 	mov cx, [npc_x]
 	mov dx, [npc_y]
@@ -228,13 +243,42 @@ proc draw_npc
 	ret
 endp
 
+proc switch_npc
+	cmp ax, 2
+	je npc_2
+	jl npc_1
+	jg npc_3
+
+	npc_1:
+		mov [npc_x], start_npc_1_x
+		mov [npc_y], start_npc_1_y
+
+		jmp switch_npc_con
+
+	npc_2:
+		mov [npc_x], start_npc_2_x
+		mov [npc_y], start_npc_2_y
+
+		jmp switch_npc_con
+	
+	npc_3:
+		mov [npc_x], start_npc_3_x
+		mov [npc_y], start_npc_3_y
+
+		jmp switch_npc_con
+
+	switch_npc_con:
+
+	ret
+endp
+
 proc draw_player_x_line
 	push ax
 	push bx
 	push cx
 	push dx
 
-	mov al, [draw_color]
+	mov al, [player_color]
 	mov ah, 0ch
 	mov bx, [x]
 	add bx, wid
@@ -260,7 +304,7 @@ proc draw_player_y_line
 	push cx
 	push dx
 
-	mov al, [draw_color]
+	mov al, [player_color]
 	mov ah, 0ch
 	mov bx, [y]
 	add bx, height
@@ -293,7 +337,7 @@ proc draw_player
 	sub [x], wid
 	add [y], height
 	call draw_player_x_line
-	mov al, [draw_color]
+	mov al, [player_color]
 	mov ah, 0ch
 	mov cx, [x]
 	mov dx, [y]
@@ -304,14 +348,17 @@ proc draw_player
 endp
 
 proc draw_characters
-	mov [npc_x], start_npc_1_x
-	mov [npc_y], start_npc_1_y
+	mov ax, 1
+	call switch_npc
+	call clean_npc
 	call draw_npc
-	mov [npc_x], start_npc_2_x
-	mov [npc_y], start_npc_2_y
+	mov ax, 2
+	call switch_npc
+	call clean_npc
 	call draw_npc
-	mov [npc_x], start_npc_3_x
-	mov [npc_y], start_npc_3_y
+	mov ax, 3
+	call switch_npc
+	call clean_npc
 	call draw_npc
 	call draw_player
 	ret
