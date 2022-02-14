@@ -27,6 +27,11 @@ DATASEG
 
 x dw start_x
 y dw start_y
+clean_x dw ?
+clean_y dw ?
+clean_width dw ?
+clean_height dw ?
+draw_color db 47
 npc_x dw start_npc_1_x
 npc_y dw start_npc_1_y
 curr_x dw 0
@@ -41,10 +46,10 @@ proc check_arrow
 	cmp al, 61h
 	je left
 	cmp al, 73h
-	je down
+	je jump_down
 	cmp al, 64h
-	je right
-	jne con_mid
+	je jump_right
+	jne con_mid_1
 
 	up:
 		mov bx, [y]
@@ -52,71 +57,81 @@ proc check_arrow
 		cmp bx, border_up
 		jl reset_up
 
-		call clean_screen
+		call clean_player
 		sub [y], y_speed
 		call draw_characters
 
-		jmp con
+	con_mid_1:
+		jmp con_mid_2
+
+	reset_up:
+		call clean_player
+		mov [y], border_up
+		call draw_characters
+		jmp con_mid_1
+
 	left:
 		mov bx, [x]
 		sub bx, x_speed
 		cmp bx, border_left
 		jl reset_left
 
-		call clean_screen
+		call clean_player
 		sub [x], x_speed
 		call draw_characters
 
-		jmp con
+	con_mid_2:
+		jmp con_mid_3
+
+	jump_down:
+		jmp down
+
+	jump_right:
+		jmp right
+
+	reset_left:
+		call clean_player
+		mov [x], border_left
+		call draw_characters
+		jmp con_mid_2
+
 	down:
 		mov bx, [y]
 		add bx, y_speed
 		cmp bx, border_down
 		jg reset_down
 
-		call clean_screen
+		call clean_player
 		add	[y], y_speed
 		call draw_characters
 
-		jmp con
+	con_mid_3:
+		jmp con_mid_4
+
+	reset_down:
+		call clean_player
+		mov [y], border_down
+		call draw_characters
+		jmp con_mid_3
+	
 	right:
 		mov bx, [x]
 		add bx, x_speed
 		cmp bx, border_right
 		jg reset_right
 
-		call clean_screen
+		call clean_player
 		add [x], x_speed
 		call draw_characters
 
-		jmp con
-
-	con_mid:
-		jmp con
-
-	reset_up:
-		call clean_screen
-		mov [y], border_up
-		call draw_characters
-		jmp con
-
-	reset_left:
-		call clean_screen
-		mov [x], border_left
-		call draw_characters
-		jmp con
-
-	reset_down:
-		call clean_screen
-		mov [y], border_down
-		call draw_characters
+	con_mid_4:
 		jmp con
 
 	reset_right:
-		call clean_screen
+		call clean_player
 		mov [x], border_right
 		call draw_characters
-		jmp con
+		jmp con_mid_4
 
 	con:
 
@@ -125,37 +140,16 @@ proc check_arrow
 	ret
 endp
 
-proc clean_screen
+proc clean_player
 	push ax
-	push bx
-	push cx
-	push dx
 
-	mov bx, 0
-	mov al, 0
-	mov [curr_x], 0
-	draw_line:
-		mov cx, [curr_x]
-		mov dx, bx
-		mov ah, 0ch
-		int 10h
-		inc [curr_x]
-		cmp [curr_x], 320
-		jne draw_line
-		je drop_down
+	mov al, [draw_color]
+	push ax
+	mov [draw_color], 0
+	call draw_player
+	pop ax
+	mov [draw_color], al
 
-	drop_down:
-		inc bx
-		cmp bx, 200
-		mov [curr_x], 0
-		jne draw_line
-		je con2
-
-	con2:
-
-	pop dx
-	pop cx
-	pop bx
 	pop ax
 	ret
 endp
@@ -240,7 +234,7 @@ proc draw_player_x_line
 	push cx
 	push dx
 
-	mov al, 47
+	mov al, [draw_color]
 	mov ah, 0ch
 	mov bx, [x]
 	add bx, wid
@@ -266,7 +260,7 @@ proc draw_player_y_line
 	push cx
 	push dx
 
-	mov al, 47
+	mov al, [draw_color]
 	mov ah, 0ch
 	mov bx, [y]
 	add bx, height
@@ -299,7 +293,7 @@ proc draw_player
 	sub [x], wid
 	add [y], height
 	call draw_player_x_line
-	mov al, 47
+	mov al, [draw_color]
 	mov ah, 0ch
 	mov cx, [x]
 	mov dx, [y]
