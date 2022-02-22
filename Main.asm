@@ -8,10 +8,16 @@ start_x equ 30
 start_y equ 30
 start_npc_1_x equ 100
 start_npc_1_y equ 30
+npc_1_max_y equ 120
+npc_1_min_y equ 30
 start_npc_2_x equ 30
 start_npc_2_y equ 80
+npc_2_max_x equ 250
+npc_2_min_x equ 30
 start_npc_3_x equ 200
 start_npc_3_y equ 50
+npc_3_max_y equ 180
+npc_3_min_y equ 20
 npc_height equ 20
 npc_wid equ 20
 height equ 20
@@ -27,12 +33,17 @@ DATASEG
 
 x dw start_x
 y dw start_y
-clean_x dw ?
-clean_y dw ?
-clean_width dw ?
-clean_height dw ?
 player_color db 47
 npc_color db 40
+npc_1_x dw start_npc_1_x
+npc_1_y dw start_npc_1_y
+npc_1_dir db 1
+npc_2_x dw start_npc_2_x
+npc_2_y dw start_npc_2_y
+npc_2_dir db 1
+npc_3_x dw start_npc_3_x
+npc_3_y dw start_npc_3_y
+npc_3_dir db 1
 npc_x dw start_npc_1_x
 npc_y dw start_npc_1_y
 curr_x dw 0
@@ -156,16 +167,12 @@ proc clean_player
 endp
 
 proc clean_npc
-	push ax
-
-	mov al, [npc_color]
-	push ax
+	mov bl, [npc_color]
+	push bx
 	mov [npc_color], 0
 	call draw_npc
-	pop ax
-	mov [npc_color], al
-
-	pop ax
+	pop bx
+	mov [npc_color], bl
 	ret
 endp
 
@@ -244,31 +251,123 @@ proc draw_npc
 endp
 
 proc switch_npc
+	push ax
+	push bx
+	push cx
 	cmp ax, 2
 	je npc_2
 	jl npc_1
 	jg npc_3
 
 	npc_1:
-		mov [npc_x], start_npc_1_x
-		mov [npc_y], start_npc_1_y
+		mov bx, [npc_1_x]
+		mov cx, [npc_1_y]
+		mov [npc_x], bx
+		mov [npc_y], cx
 
 		jmp switch_npc_con
 
 	npc_2:
-		mov [npc_x], start_npc_2_x
-		mov [npc_y], start_npc_2_y
+		mov bx, [npc_2_x]
+		mov cx, [npc_2_y]
+		mov [npc_x], bx
+		mov [npc_y], cx
 
 		jmp switch_npc_con
 	
 	npc_3:
-		mov [npc_x], start_npc_3_x
-		mov [npc_y], start_npc_3_y
+		mov bx, [npc_3_x]
+		mov cx, [npc_3_y]
+		mov [npc_x], bx
+		mov [npc_y], cx
 
 		jmp switch_npc_con
 
 	switch_npc_con:
 
+	pop cx
+	pop bx
+	pop ax
+	ret
+endp
+
+proc move_npc
+	push ax
+	cmp ax, 2
+	jl move_npc_1
+	je move_npc_2
+	jg move_npc_3
+
+	move_npc_1:
+		cmp [npc_1_dir], 1
+		je move_npc_1_down
+		jmp move_npc_1_up
+		move_npc_1_down:
+			cmp [npc_1_y], npc_1_max_y
+			je reached_max_npc_1_down
+			jmp move_npc_1_down_con
+			
+			reached_max_npc_1_down:
+				mov [npc_1_dir], 0
+				dec [npc_1_y]
+				jmp move_npc_con
+
+			move_npc_1_down_con:
+				inc [npc_1_y]
+				jmp move_npc_con
+		
+		move_npc_1_up:
+			cmp [npc_1_y], npc_1_min_y
+			je reached_max_npc_1_up
+			jmp move_npc_1_up_con
+
+			reached_max_npc_1_up:
+				mov [npc_1_dir], 1
+				inc [npc_1_y]
+				jmp move_npc_con
+
+			move_npc_1_up_con:
+				dec [npc_1_y]
+				jmp move_npc_con
+
+	move_npc_2:
+
+	move_npc_3:
+		cmp [npc_3_dir], 1
+		je move_npc_3_down
+		jmp move_npc_3_up
+		move_npc_3_down:
+			cmp [npc_3_y], npc_3_max_y
+			je reached_max_npc_3_down
+			jmp move_npc_3_down_con
+			
+			reached_max_npc_3_down:
+				mov [npc_3_dir], 0
+				dec [npc_3_y]
+				jmp move_npc_con
+
+			move_npc_3_down_con:
+				inc [npc_3_y]
+				jmp move_npc_con
+		
+		move_npc_3_up:
+			cmp [npc_3_y], npc_3_min_y
+			je reached_max_npc_3_up
+			jmp move_npc_3_up_con
+
+			reached_max_npc_3_up:
+				mov [npc_3_dir], 1
+				inc [npc_3_y]
+				jmp move_npc_con
+
+			move_npc_3_up_con:
+				dec [npc_3_y]
+				jmp move_npc_con
+
+
+	move_npc_con:
+
+	pop ax 
 	ret
 endp
 
@@ -374,6 +473,19 @@ start:
 	call draw_characters
 
 	mainloop:
+		mov ax, 1
+		call switch_npc
+		call move_npc
+		call clean_npc
+		mov ax, 2
+		call switch_npc
+		call move_npc
+		call clean_npc
+		mov ax, 3
+		call switch_npc
+		call move_npc
+		call clean_npc
+		call draw_characters
 		mov ah, 01h
 		int 16h
 		jz mainloop
